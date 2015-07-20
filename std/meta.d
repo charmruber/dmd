@@ -19,3 +19,8 @@ unittest {
     alias Types = AliasSeq!(TL, char);
     static assert(is(Types == AliasSeq!(int, double, char)));
 }
+
+template staticIndexOf(T, TList) {
+    enum staticIndexOf = genericIndexOf!(T, TList).index;
+}
+
