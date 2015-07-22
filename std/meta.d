@@ -77,7 +77,37 @@ template Alias(alias a) {
         static assert(0, "Cannot alias " ~ a.stringof);
 }
 
-template Alias() {
-
+template Alias(a...) {
+    alias Alias = a;
 }
-	       
+
+unittest {
+    enum abc = 1;
+    static assert(__traits(compiles, { alias a = Alias!(123); }));
+    static assert(__traits(compiles, { alias a = Alias!(abc); }));
+    static assert(__traits(compiles, { alias a = Alias!(int); }));
+    static assert(__traits(compiles, { alias a = Alias!(1,abe,int);}));
+}
+
+private:
+
+private template isSame(ab...)
+    if(ab.length == 2) {
+    static if(__traits(compiles, expectType!(ab[0]), expectType!(ab[1]))) {
+	enum isSame = is(ab[0] == ab[1]);
+    }else static if(!__traits(compiles, expectType!(ab[0])) &&
+		    !__traits(compiles, expectType!(ab[1])) &&
+		    __traits(compiles, expectBool!(ab[0] == ab[1]))) {
+	static if(!__traits(compiles, &ab[0]) || 
+		  !__traits(compiles, &ab[1])) {
+	    enum isSame = (ab[0] == ab[1]);
+	}
+	else {
+	    enum isSame = __traits(isSame, ab[0], ab[1]);
+	}
+    }else {
+	enum isSame = __traits(isSame, ab[0], ab[1]);	 
+    }
+}
+private template expectType() {}
+private template expectBool() {}
