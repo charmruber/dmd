@@ -24,26 +24,6 @@ unittest
     static assert(is(Types == AliasSeq!(int, double, char)));
 }
 
-template staticIndexOf(T, TList...)
-{
-    enum staticIndexOf = genericIndexOf!(T, TList).index;
-}
-
-template staticIndexOf(alias T, Tlist...)
-{
-    enum staticIndexOf = genericIndexOf!(T, TList).index;
-}
-
-unittest
-{
-    import std.stdio;
-
-    void foo()
-    {
-	       writeln("The index of long is $s", staticIndexOf!(long, AliasSeq!(int, long, double)));
-    }
-}
-
 private template genericIndexOf(args...)
     if(args.length >= 1)
 {
@@ -93,7 +73,27 @@ unittest
     static assert(staticIndexOf!("void", 0, void, "void") == 2);
 }
 
-alias IdexOf = staticIndexOf;
+alias IndexOf = staticIndexOf;
+
+template staticIndexOf(T, TList...)
+{
+    enum staticIndexOf = genericIndexOf!(T, TList).index;
+}
+
+template staticIndexOf(alias T, TList...)
+{
+    enum staticIndexOf = genericIndexOf!(T, TList).index;
+}
+
+unittest
+{
+    import std.stdio;
+
+    void foo()
+    {
+	       writeln("The index of long is $s", staticIndexOf!(long, AliasSeq!(int, long, double)));
+    }
+}
 
 template Erase(T, TList...)
 {
@@ -111,6 +111,150 @@ unittest
     alias TL = Erase!(long, Types);
     static assert(is(TL == AliasSeq!(int, double, char)));
 }
+
+private template GenericErase(args...)
+    if(args.length >= 1)
+{
+    alias e = Alias!(args[0]);
+    alias tuple = args[1 .. $];
+
+    static if (tuple.length)
+    {
+        alias head = Alias!(tuple[0]);
+        alias tail = tuple[1 .. $];
+
+        static if (isSame!(e, head))
+            alias result = tail;
+        else
+            alias result = AliasSeq!(head, GenericErase!(e, tail).result);
+    }
+    else
+    {
+        alias result = AliasSeq!();
+    }
+}
+
+unittest
+{
+    static assert(Pack!(Erase!(int, short, int, int, 4)).equals!(short, int, 4));
+    static assert(Pack!(Erase!(1, real, 3, 1, 4, 1, 5, 9)).equals!(real, 3, 4, 1, 5,9));
+}
+
+template EraseAll(T, TList...)
+{
+    alias EraseAll = GenericEraseAll!(T, TList).result;
+}
+
+template EraseAll(alias T, TList...)
+{
+    alias EraseAll = GenericEraseAll!(T, TList).result;
+}
+
+unittest
+{
+    alias Types = AliasSeq!(int, long, long, int);
+
+    alias TL = EraseAll!(long, Types);
+    static assert(is(TL == AliasSeq!(int, int)));
+}
+
+private template GenericEraseAll(args...)
+    if (args.length >= 1)
+{
+    alias e = Alias!(args[0]);
+    alias tuple = args[1 .. $];
+
+    static if (tuple.length)
+    {
+        alias head = Alias!(tuple[0]);
+        alias tail = tuple[1 .. $];
+        alias next = GenericEraseAll!(e, tail).result;
+
+        static if (isSame!(e, head))
+            alias result = next;
+        else
+            alias result = AliasSeq!(head, next);
+    }
+    else
+    {
+        alias result = AliasSeq!();
+    }
+}
+
+unittest
+{
+    static assert(Pack!(EraseAll!(int, short, int, int, 4)).equals!(short, 4));
+    static assert(Pack!(EraseAll!(1, real, 3, 1, 4, 1, 5, 9)).equals(real, 3, 4, 5, 9));
+}
+
+template NoDuplicates(TList...)
+{
+    static if (TList.length == 0)
+        alias NoDuplicates = TList;
+    else
+        alias NoDuplicates = AliasSeq!(TList[0], NoDuplicates!(EraseAll!(TList[0], TList[1 .. $])));
+}
+
+unittest
+{
+    alias Types = AliasSeq!(int, long, long, int, float);
+
+    alias TL = NoDuplicates!(Types);
+    static assert(is(TL == AliasSeq!(int, long, float)));
+}
+
+unittest
+{
+    static assert(
+        Pack!(
+            NoDuplicates!(1, int, 1, NoDuplicates, int, NoDuplicates, real))
+        .equals!(1, int, NoDuplicates, real)
+    );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
