@@ -308,7 +308,7 @@ unittest
     static assert(__traits(compiles, { alias a = Alias!(123); }));
     static assert(__traits(compiles, { alias a = Alias!(abc); }));
     static assert(__traits(compiles, { alias a = Alias!(int); }));
-    static assert(__traits(compiles, { alias a = Alias!(1,abe,int);}));
+    static assert(__traits(compiles, { alias a = Alias!(1,abc,int); }));
 }
 
 private:
@@ -363,7 +363,7 @@ unittest
 
     static immutable X = 1, Y = 1, Z = 2;
     static assert( isSame!(X, X));
-    static assert(!isSame!(X, y));
+    static assert(!isSame!(X, Y));
     static assert(!isSame!(Y, Z));
 
     int foo();
@@ -377,11 +377,11 @@ unittest
 
     int x, y;
     real z;
-    static assert( isSame(x, x));
-    static assert(!isSame(x, y));
-    static assert(!isSame(y, z));
-    static assert( isSame(z, z));
-    static assert(!isSame(x, 0));
+    static assert( isSame!(x, x));
+    static assert(!isSame!(x, y));
+    static assert(!isSame!(y, z));
+    static assert( isSame!(z, z));
+    static assert(!isSame!(x, 0));
 }
 
 private template Pack(T...)
@@ -395,7 +395,7 @@ private template Pack(T...)
             static if (T.length == 0)
                 enum equals = true;
             else
-                equals = isSame!(T[0], U[0]) && Pack!(T[1 .. $]).equals(U[1 .. $]);
+                enum equals = isSame!(T[0], U[0]) && Pack!(T[1 .. $]).equals!(U[1 .. $]);
         }
         else
         {
