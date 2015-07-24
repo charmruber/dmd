@@ -184,7 +184,7 @@ private template GenericEraseAll(args...)
 unittest
 {
     static assert(Pack!(EraseAll!(int, short, int, int, 4)).equals!(short, 4));
-    static assert(Pack!(EraseAll!(1, real, 3, 1, 4, 1, 5, 9)).equals(real, 3, 4, 5, 9));
+    static assert(Pack!(EraseAll!(1, real, 3, 1, 4, 1, 5, 9)).equals!(real, 3, 4, 5, 9));
 }
 
 template NoDuplicates(TList...)
