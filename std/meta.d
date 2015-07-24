@@ -326,21 +326,17 @@ private template isSame(ab...)
     {
         static if(!__traits(compiles, &ab[0]) ||
                   !__traits(compiles, &ab[1]))
-        {
             enum isSame = (ab[0] == ab[1]);
-        }
         else
-        {
             enum isSame = __traits(isSame, ab[0], ab[1]);
-        }
     }
     else
     {
         enum isSame = __traits(isSame, ab[0], ab[1]);
     }
 }
-private template expectType() {}
-private template expectBool() {}
+private template expectType(T) {}
+private template expectBool(bool b) {}
 
 unittest
 {
